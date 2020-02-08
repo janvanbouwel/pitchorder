@@ -1,0 +1,5 @@
+numpy
+scipy
+ffmpy
+youtube_dl
+tqdm
