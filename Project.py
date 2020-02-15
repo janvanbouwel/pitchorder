@@ -1,5 +1,7 @@
 import os
 import time
+import tempfile
+import shutil
 
 import Input
 import Processing
@@ -9,10 +11,14 @@ import youtube_dl
 
 
 def make_all(name, url):
-    while os.path.isdir(name):
-        name += "1"
-    os.mkdir(name)
-    os.chdir(name)
+    config = Input.get_config()
+    current_dir = os.getcwd()
+    save_dir = os.path.abspath(config["save_dir"])
+    os.makedirs(save_dir, exist_ok=True)
+
+    temp_dir = tempfile.mkdtemp(prefix=name)
+    print(f"temp dir is located at: {temp_dir}")
+    os.chdir(temp_dir)
 
     ydl_opts = {}
     with youtube_dl.YoutubeDL(ydl_opts) as ydl:
@@ -44,9 +50,11 @@ def make_all(name, url):
         f.write(out)
 
     print("combining")
-    Output.combine("images.txt", "sorted.wav", "result.mp4", fps)
-    print("done, saved to result.mp4")
-    os.chdir("..")
+    file_path = os.path.join(save_dir, f"{name}_result.mp4")
+    Output.combine("images.txt", "sorted.wav", file_path, fps)
+    print(f"done, saved to {file_path}")
+    os.chdir(current_dir)
+    shutil.rmtree(temp_dir)
 
 
 

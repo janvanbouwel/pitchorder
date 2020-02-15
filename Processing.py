@@ -8,7 +8,7 @@ from tqdm import tqdm
 
 ### based partially on https://github.com/mzucker/python-tuner
 
-min_freq = 30
+min_freq = 1
 
 max_freq = 16000
 
@@ -25,17 +25,22 @@ class Chunk:
         self.note = -index
 
     def calc_note(self):
-        mono = (self.data[:, 0] / 2) + (self.data[:, 1] / 2)
+        try:
+            mono = (self.data[:, 0] / 2) + (self.data[:, 1] / 2)
+        except IndexError:
+            mono = self.data
         window = 0.5 * (1 - np.cos(np.linspace(0, 2*np.pi, len(mono), False)))
         global min_freq, max_freq
         imax = min(max_freq, len(mono))
-        fft = np.fft.rfft(mono * window)
+        # fft = np.fft.rfft(mono * window)
+        fft = np.fft.rfft(mono)
         FREQ_STEP = float(self.SR) / len(mono)
         try:
             freq = (np.abs(fft[min_freq:imax]).argmax() + min_freq) * FREQ_STEP
         except ValueError:
             freq = (np.abs(fft).argmax() + min_freq) * FREQ_STEP
         self.note = self.freq_to_note_number(freq)
+        self.note = freq
         return
 
 

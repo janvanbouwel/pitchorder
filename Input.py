@@ -5,6 +5,20 @@ import json
 from subprocess import PIPE
 
 
+default_config = {"save_dir": "."}
+
+
+def get_config():
+    global default_config
+    config = default_config
+    try:
+        with open("config.json", "r") as config_file:
+            config.update(json.loads(config_file.read(-1)))
+    except FileNotFoundError:
+        pass
+    return config
+
+
 def gen_audio(video_path, audio_name, format=".wav"):
     outputname = audio_name + format
     ff = ffmpy.FFmpeg(inputs={video_path: None}, outputs={outputname: "-y -v quiet"})
